@@ -31,8 +31,64 @@
 - No `web.xml`.
 - Default entry redirects to `/hello`.
 
+## macOS 从零安装并运行（Homebrew）
+### 1) 安装依赖
+```bash
+brew update
+brew install openjdk maven tomcat
+```
+
+### 2) 配置 Java（zsh）
+```bash
+sudo ln -sfn /opt/homebrew/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
+echo 'export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+### 3) 验证安装
+```bash
+java -version
+mvn -version
+"$(brew --prefix tomcat)/bin/version.sh"
+```
+
+### 4) 构建项目
+```bash
+cd /Users/n1ck/fucksoftware/TA_recruitment_system
+mvn clean package
+```
+
+
+### 5) 部署到 Tomcat 11
+```bash
+cp target/ta105.war "$(brew --prefix tomcat)/libexec/webapps/"
+```
+
+### 6) 启动 Tomcat
+前台运行（便于看日志）：
+```bash
+"$(brew --prefix tomcat)/bin/catalina" run
+```
+
+或后台服务：
+```bash
+brew services start tomcat
+```
+
+### 7) 访问验证
+- `http://localhost:8080/ta105/`
+- `http://localhost:8080/ta105/hello`
+- `http://localhost:8080/ta105/hello?name=Nick`
+
+### 8) 停止 Tomcat
+如果是前台 `catalina run`：`Ctrl + C`
+
+如果是后台服务：
+```bash
+brew services stop tomcat
+```
+
 ## Build
-Maven is required (`mvn`).
 ```bash
 mvn clean package
 ```
@@ -44,14 +100,8 @@ target/ta105.war
 
 ## Deploy To External Tomcat 11
 ```bash
-cp target/ta105.war "$CATALINA_BASE/webapps/"
-"$CATALINA_BASE/bin/startup.sh"
-```
-
-If you use `CATALINA_HOME` instead:
-```bash
-cp target/ta105.war "$CATALINA_HOME/webapps/"
-"$CATALINA_HOME/bin/startup.sh"
+cp target/ta105.war "$(brew --prefix tomcat)/libexec/webapps/"
+"$(brew --prefix tomcat)/bin/catalina" start
 ```
 
 ## Verify
@@ -61,9 +111,5 @@ cp target/ta105.war "$CATALINA_HOME/webapps/"
 
 ## Stop Tomcat
 ```bash
-"$CATALINA_BASE/bin/shutdown.sh"
-```
-or
-```bash
-"$CATALINA_HOME/bin/shutdown.sh"
+"$(brew --prefix tomcat)/bin/catalina" stop
 ```
