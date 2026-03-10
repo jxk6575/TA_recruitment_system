@@ -3,8 +3,14 @@
 ## Stack
 - OpenJDK 25.0.2 (or any Java 17+)
 - Tomcat 11
-- Servlet/JSP (Jakarta namespace)
+- Servlet API (Jakarta) + 原生 HTML/CSS/JS
 - Maven WAR project
+
+## Architecture
+- 单 WAR 同源部署，前后端分离：
+- 前端：纯静态 `index.html` + `static/js` + `static/css`（不使用 JSP）
+- 后端：Servlet 仅提供 JSON API（`/api/v1/*`）
+- 注解注册：`@WebServlet`、`@WebFilter`，不使用 `web.xml`
 
 ## Project Layout
 ```text
@@ -12,24 +18,45 @@
 ├── pom.xml
 └── src/
     └── main/
-        ├── java/
-        │   └── com/example/
-        │       ├── filter/EncodingFilter.java
-        │       ├── model/User.java
-        │       └── servlet/HelloServlet.java
+        ├── java/ta105/
+        │   ├── EncodingFilter.java
+        │   ├── HelloApiServlet.java
+        │   └── User.java
         ├── resources/
         └── webapp/
-            ├── index.jsp
-            └── WEB-INF/
-                └── views/
-                    ├── error.jsp
-                    └── hello.jsp
+            ├── index.html
+            └── static/
+                ├── css/style.css
+                └── js/app.js
 ```
 
-## Notes
-- Annotation-only registration (`@WebServlet`, `@WebFilter`).
-- No `web.xml`.
-- Default entry redirects to `/hello`.
+## API Contract
+### GET `/api/v1/hello?name=Nick`
+```json
+{
+  "title": "105组TA招聘系统",
+  "user": { "name": "Nick", "email": "user@example.com" }
+}
+```
+
+### POST `/api/v1/hello`
+Request:
+```json
+{ "name": "Nick" }
+```
+
+Response:
+```json
+{
+  "title": "105组TA招聘系统",
+  "user": { "name": "Nick", "email": "user@example.com" }
+}
+```
+
+### Error Response
+```json
+{ "code": "INVALID_REQUEST", "message": "..." }
+```
 
 ## macOS 从零安装并运行（Homebrew）
 ### 1) 安装依赖
@@ -58,7 +85,6 @@ cd /Users/n1ck/fucksoftware/TA_recruitment_system
 mvn clean package
 ```
 
-
 ### 5) 部署到 Tomcat 11
 ```bash
 cp target/ta105.war "$(brew --prefix tomcat)/libexec/webapps/"
@@ -75,41 +101,34 @@ cp target/ta105.war "$(brew --prefix tomcat)/libexec/webapps/"
 brew services start tomcat
 ```
 
-### 7) 访问验证
+### 7) 验证
+前端入口：
 - `http://localhost:8080/ta105/`
-- `http://localhost:8080/ta105/hello`
-- `http://localhost:8080/ta105/hello?name=Nick`
+
+API：
+- `http://localhost:8080/ta105/api/v1/hello`
+- `http://localhost:8080/ta105/api/v1/hello?name=Nick`
+
+curl：
+```bash
+curl "http://localhost:8080/ta105/api/v1/hello"
+curl "http://localhost:8080/ta105/api/v1/hello?name=Nick"
+curl -X POST "http://localhost:8080/ta105/api/v1/hello" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Nick"}'
+```
 
 ### 8) 停止 Tomcat
-如果是前台 `catalina run`：`Ctrl + C`
+前台 `catalina run`：`Ctrl + C`
 
-如果是后台服务：
+后台服务：
 ```bash
 brew services stop tomcat
 ```
 
-## Build
-```bash
-mvn clean package
-```
-
-WAR output:
-```text
-target/ta105.war
-```
-
 ## Deploy To External Tomcat 11
 ```bash
+mvn clean package
 cp target/ta105.war "$(brew --prefix tomcat)/libexec/webapps/"
 "$(brew --prefix tomcat)/bin/catalina" start
-```
-
-## Verify
-- `http://localhost:8080/ta105/`
-- `http://localhost:8080/ta105/hello`
-- `http://localhost:8080/ta105/hello?name=Nick`
-
-## Stop Tomcat
-```bash
-"$(brew --prefix tomcat)/bin/catalina" stop
 ```

@@ -1,4 +1,4 @@
-package com.example.model;
+package ta105;
 
 public class User {
     private String name;
