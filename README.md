@@ -76,12 +76,12 @@ source ~/.zshrc
 ```bash
 java -version
 mvn -version
-"$(brew --prefix tomcat)/bin/version.sh"
+"$(brew --prefix tomcat)/bin/catalina" version
 ```
 
 ### 4) 构建项目
 ```bash
-cd /Users/n1ck/fucksoftware/TA_recruitment_system
+cd /path/to/your/TA_recruitment_system
 mvn clean package
 ```
 
