@@ -26,3 +26,5 @@ replay_pid*
 # Maven local build artifacts
 target/
 .m2/
+
+/.idea/
